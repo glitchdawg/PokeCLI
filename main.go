@@ -247,6 +247,48 @@ func commandCatch(c *config, args []string) error{
 	return nil
 }
 
+func commandInspect(c *config, args []string) error{
+	if len(args) < 2 {
+		return fmt.Errorf("please provide a pokemon name")
+	}
+	if len(args) > 2 {
+		return fmt.Errorf("too many arguments, please provide only one pokemon name")
+	}
+	if args[1] == "" {
+		return fmt.Errorf("please provide a valid pokemon name")
+	}
+	pokemonName := args[1]
+	if pokemonInfo,ok:= c.Pokedex[pokemonName]; ok {
+		fmt.Printf("Name: %s\n", pokemonInfo.Name)
+		fmt.Printf("Height: %d\n", pokemonInfo.Height)
+		fmt.Printf("Weight: %d\n", pokemonInfo.Weight)
+		fmt.Printf("Stats:\n")
+		for _, stat := range pokemonInfo.Stats {
+			fmt.Printf("  %s: %d\n", stat.Stat.Name, stat.BaseStat)
+		}
+		fmt.Printf("Types:\n")
+		for _, t := range pokemonInfo.Types {
+			fmt.Printf("  %s\n", t.Type.Name)
+		}		
+
+	} else {
+		return fmt.Errorf("pokemon not found in your Pokedex")
+	}
+	return nil
+}
+
+func commandPokedex(c *config, args []string) error{
+	if len(c.Pokedex) == 0 {
+		fmt.Println("Your Pokedex is empty.")
+		return nil
+	}
+	fmt.Println("Your Pokedex:")
+	for name, _ := range c.Pokedex {
+		fmt.Printf("- %s\n", name)
+	}
+	return nil
+}
+
 func main() {
 	cache:=pokecache.NewCache(5*time.Minute)
 	scanner := bufio.NewScanner(os.Stdin)
@@ -285,6 +327,17 @@ func main() {
 			description: "Catch a pokemon",
 			callback: commandCatch,
 		},
+		"inspect":{
+			name: "inspect",
+			description: "Inspect a pokemon",
+			callback: commandInspect, 
+		},
+		"pokedex":{
+			name: "pokedex",
+			description: "Show the pokedex",
+			callback: commandPokedex,
+		},
+
 	}
 	
 	for {
